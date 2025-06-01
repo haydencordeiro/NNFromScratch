@@ -45,7 +45,7 @@ def forward_pass(input_data):
     for layer_idx in range(len(NETWORK)):
         current_layer = NETWORK[layer_idx]
         new_input_data = []
-        print(f"Processing Layer {layer_idx + 1}", input_data)
+        # print(f"Processing Layer {layer_idx + 1}", input_data)
         for neuron_idx, neuron in enumerate(current_layer):
             # Calculate the weighted sum of inputs
             weighted_sum = neuron['bias']
@@ -84,6 +84,22 @@ def backpropagation(target_outputs):
                 error *= sigmoid_derivative(neuron['output'])
                 neuron['error'] = error
 
+def update_weights(input_data, learning_rate=0.1):
+    global NETWORK
+    # Update weights and biases for each neuron
+    for layer_idx in range(len(NETWORK)):
+        current_layer = NETWORK[layer_idx]
+        if layer_idx != 0:
+            # For the first hidden layer we use the actauly input data
+            # otherwise we use the output of the previous layer
+            input_data = [neuron['output'] for neuron in NETWORK[layer_idx - 1]]
+
+        for neuron in current_layer:
+            # Update incoming weights
+            for weight_idx in range(len(neuron['incoming_weights'])):
+                neuron['incoming_weights'][weight_idx] -= learning_rate * neuron['error'] * input_data[weight_idx]
+            # Update bias
+            neuron['bias'] -= learning_rate * neuron['error']
 
 
 input_dataset = [(0, 0), (0, 1), (1, 0), (1, 1)]
@@ -93,9 +109,14 @@ target_outputs = [(0, 1), (1, 0), (1, 0), (0, 1)]
 # Initializing the network with 2 input neurons, 3 hidden neurons, and 2 output neurons
 create_network([2,3,2])
 
-for idx,input_data in enumerate(input_dataset):
-    forward_pass(list(input_data))
-    print(f"Input: {input_data}")
-    display_network()
-    backpropagation(target_outputs[idx])
+for i in range(100):
+    errorDuringEpoch = 0
+    for idx,input_data in enumerate(input_dataset):
+        forward_pass(list(input_data))
+        errorDuringEpoch += sum((target_outputs[idx][j]- NETWORK[-1][j]['output'])**2 for j in range(len(NETWORK[-1])))
+        # print(f"Input: {input_data}")
+        # display_network()
+        backpropagation(target_outputs[idx])
+        update_weights(list(input_data), learning_rate=0.1)
+    print(f"Epoch {i+1}, Error: {errorDuringEpoch}")
 
