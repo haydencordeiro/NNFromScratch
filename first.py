@@ -8,7 +8,6 @@ def create_network( layers):
     global NETWORK
     NETWORK = []
 
-
     # the first layer will not have any incoming weights so there will be no need for backpropagation for the first layer so we will skip it
     # need to zip the  layers so that we can get the number of neurons in the prev layer and the current  layer
     layer_to_next_list = list(zip(layers[:-1], layers[1:]))
@@ -19,6 +18,7 @@ def create_network( layers):
             layer.append({
                 'incoming_weights' : [random() for _ in range(no_of_neurons_in_prev_layer)],
                 'output' : 0,
+                'error' : 0,
                 'bias' : random(),
             })
         NETWORK.append(layer)
@@ -33,6 +33,7 @@ def display_network():
             print(f"    Bias: {neuron['bias']}")
             print(f"    Incoming Weights: {neuron['incoming_weights']}")
             print(f"    Output: {neuron['output']}")
+            print(f"    Error: {neuron['error']}")
 
 
 def activation_function(x):
@@ -55,6 +56,33 @@ def forward_pass(input_data):
             new_input_data.append(neuron['output'])
         input_data = new_input_data
 
+def sigmoid_derivative(output):
+    return output * (1 - output)  # Derivative of the sigmoid function
+
+# This will help use calculate error that will be used to adjust the weights
+def backpropagation(target_outputs):
+    global NETWORK
+    # loop through the network in reverse order
+    for layer_idx in reversed(range(len(NETWORK))):
+        current_layer = NETWORK[layer_idx]
+        next_layer = NETWORK[layer_idx + 1] if layer_idx + 1 < len(NETWORK) else None
+        
+        # If it's the output layer, calculate the error
+        if next_layer is None:
+            for neuron_idx, neuron in enumerate(current_layer):
+                output = neuron['output']
+                target = target_outputs[neuron_idx]
+                # Calculate the error for the output neuron
+                error = (output-target) * sigmoid_derivative(output)
+                neuron['error'] = error 
+        else:
+            # For hidden layers, propagate the error back to adjust weights
+            for neuron_idx, neuron in enumerate(current_layer):
+                error = 0
+                for next_neuron in next_layer:
+                    error += next_neuron['incoming_weights'][neuron_idx] * next_neuron['error']
+                error *= sigmoid_derivative(neuron['output'])
+                neuron['error'] = error
 
 
 
@@ -65,8 +93,9 @@ target_outputs = [(0, 1), (1, 0), (1, 0), (0, 1)]
 # Initializing the network with 2 input neurons, 3 hidden neurons, and 2 output neurons
 create_network([2,3,2])
 
-for input_data in input_dataset:
+for idx,input_data in enumerate(input_dataset):
     forward_pass(list(input_data))
     print(f"Input: {input_data}")
     display_network()
+    backpropagation(target_outputs[idx])
 
