@@ -119,7 +119,7 @@ for i in range(2000):
         # print(f"Input: {input_data}")
         # display_network()
         backpropagation(target_outputs[idx])
-        update_weights(list(input_data), learning_rate=0.1)
+        update_weights(list(input_data), learning_rate=0.5)
     print(f"Epoch {i+1}, Error: {errorDuringEpoch}")
 
 print(forward_pass((0, 0)))
