@@ -111,7 +111,7 @@ target_outputs = [(0, 1), (1, 0), (1, 0), (0, 1)]
 create_network([2,3,2])
 
 # Training the network
-for i in range(100):
+for i in range(2000):
     errorDuringEpoch = 0
     for idx,input_data in enumerate(input_dataset):
         outputs = forward_pass(list(input_data))
