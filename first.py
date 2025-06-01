@@ -104,6 +104,7 @@ def update_weights(input_data, learning_rate=0.1):
             # Update bias
             neuron['bias'] -= learning_rate * neuron['error']
 
+# The below code is for visualizing the network in dark mode and is copied from chatGPT
 COLORS = {
     'background': '#121212',              # --clr-surface-a0
     'text': '#ffffff',                    # --clr-light-a0
@@ -126,6 +127,7 @@ def visualize_network(network, input_len, epoch, loss, ax=None):
         loss (float): Current epoch loss (SSE)
         ax (matplotlib axis): Optional axis
     """
+    plt.style.use('dark_background')
     layers = len(network)
     max_neurons = max(input_len, *(len(l) for l in network))
     col_spacing, row_spacing = 2.5, 1.5
@@ -137,7 +139,7 @@ def visualize_network(network, input_len, epoch, loss, ax=None):
     # Title / Loss display
     ax.text(0.01, 0.99, f"Epoch {epoch}", transform=ax.transAxes,
             ha="left", va="top", fontsize=14, weight="bold", color=COLORS['text'])
-    ax.text(0.99, 0.99, f"SSE={loss:.4f}", transform=ax.transAxes,
+    ax.text(0.75, 0.99, f"SSE={loss:.4f}", transform=ax.transAxes,
             ha="right", va="top", fontsize=14, color=COLORS['text'],
             bbox=dict(boxstyle="round", fc=COLORS['circle_fill'], ec="none"))
 
@@ -169,6 +171,7 @@ def visualize_network(network, input_len, epoch, loss, ax=None):
             ax.text(x, -y, f"{neuron['output']:.2f}", ha="center", va="center", fontsize=8, color=COLORS['output_text'])
             # Error (δ) below circle
             ax.text(x, -y-0.4, f"δ={neuron['error']:.2f}", ha="center", va="center", fontsize=6, color=COLORS['error_text'])
+            ax.text(x, -y-0.5, f"B={neuron['bias']:.2f}", ha="center", va="center", fontsize=6, color=COLORS['edge'])
 
             # Draw incoming connections
             prev_layer_idx = li
@@ -177,7 +180,7 @@ def visualize_network(network, input_len, epoch, loss, ax=None):
                 ax.plot([prev_x, x], [prev_y, -y], lw=0.6, color=COLORS['edge'])
                 mid_x = prev_x + 0.33 * (x - prev_x)
                 mid_y = prev_y + 0.33 * (-y - prev_y)
-                ax.text(mid_x, mid_y, f"{w:.2f}", fontsize=6, color=COLORS['weight_text'], ha="center", va="center")
+                ax.text(mid_x, mid_y, f"{w:.2f}", fontsize=6, color=COLORS['error_text'], ha="center", va="center")
 
     ax.set_xlim(-1, (layers + 1) * col_spacing)
     ax.set_ylim(-max_neurons * row_spacing - 1, 1)
@@ -196,7 +199,7 @@ target_outputs = [(0, 1), (1, 0), (1, 0), (0, 1)]
 create_network([2,3,2])
 
 # Training the network
-for i in range(200):
+for i in range(20000):
     errorDuringEpoch = 0
     for idx,input_data in enumerate(input_dataset):
         outputs = forward_pass(list(input_data))
@@ -204,9 +207,12 @@ for i in range(200):
         # print(f"Input: {input_data}")
         # display_network()
         backpropagation(target_outputs[idx])
-        update_weights(list(input_data), learning_rate=0.5)
+        update_weights(list(input_data), learning_rate=0.1)
     print(f"Epoch {i+1}, Error: {errorDuringEpoch}")
-    visualize_network(NETWORK, 2, i+1, errorDuringEpoch)
+    if i% 10 == 0:
+        visualize_network(NETWORK, 2, i+1, errorDuringEpoch)
+        # Uncomment the line below to visualize the network at each epoch
+    # visualize_network(NETWORK, 2, i+1, errorDuringEpoch)
 
 print(forward_pass((0, 0)))
 print(forward_pass((0, 1)))
