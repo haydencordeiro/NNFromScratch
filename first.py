@@ -23,9 +23,10 @@ def create_network( layers):
 
 
 
-
+# Initializing the network with 2 input neurons, 3 hidden neurons, and 2 output neurons
 create_network([2,3,2])
 
+# Displaying the structure of the network
 for idx,layer in enumerate(NETWORK):
     print(f"Layer {idx+1}:")
     for neuron_idx, neuron in enumerate(layer):
