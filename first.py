@@ -55,6 +55,7 @@ def forward_pass(input_data):
             neuron['output'] = activation_function(weighted_sum)
             new_input_data.append(neuron['output'])
         input_data = new_input_data
+    return input_data  # Return the output of the last layer
 
 def sigmoid_derivative(output):
     return output * (1 - output)  # Derivative of the sigmoid function
@@ -109,14 +110,20 @@ target_outputs = [(0, 1), (1, 0), (1, 0), (0, 1)]
 # Initializing the network with 2 input neurons, 3 hidden neurons, and 2 output neurons
 create_network([2,3,2])
 
+# Training the network
 for i in range(100):
     errorDuringEpoch = 0
     for idx,input_data in enumerate(input_dataset):
-        forward_pass(list(input_data))
-        errorDuringEpoch += sum((target_outputs[idx][j]- NETWORK[-1][j]['output'])**2 for j in range(len(NETWORK[-1])))
+        outputs = forward_pass(list(input_data))
+        errorDuringEpoch += sum((target_outputs[idx][j]- outputs[j])**2 for j in range(len(outputs)))
         # print(f"Input: {input_data}")
         # display_network()
         backpropagation(target_outputs[idx])
         update_weights(list(input_data), learning_rate=0.1)
     print(f"Epoch {i+1}, Error: {errorDuringEpoch}")
 
+print(forward_pass((0, 0)))
+print(forward_pass((0, 1)))
+print(forward_pass((1, 0)))
+print(forward_pass((1, 1)))
+# display_network()
